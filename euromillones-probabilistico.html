@@ -402,9 +402,18 @@ tr:hover td{background:var(--bg3)}
   .nav-list{display:flex;gap:4px;flex-wrap:wrap}
   .main{padding:1rem}
 }
+/* ── Back bar ── */
+.back-bar{display:flex;align-items:center;gap:8px;background:#050508;color:rgba(240,192,64,.7);font-family:'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:6px 2rem;border-bottom:1px solid rgba(240,192,64,.12);transition:background .15s,color .15s}
+.back-bar:hover{background:rgba(240,192,64,.06);color:var(--gold)}
+.back-arrow{font-size:17px;line-height:1;font-weight:300;opacity:.85}
+@media(max-width:640px){.back-bar{padding:5px 1rem;font-size:10px}}
 </style>
 </head>
 <body>
+
+<a href="https://apuesta1x30-droid.github.io/apuestas/" class="back-bar">
+  <span class="back-arrow">‹</span> Volver al inicio
+</a>
 
 <header class="hdr">
   <div class="logo"><div class="logo-star">★</div>Euromillones · Probabilístico</div>
