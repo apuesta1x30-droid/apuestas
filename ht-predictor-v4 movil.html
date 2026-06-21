@@ -232,6 +232,11 @@ main{padding:14px 24px 80px;max-width:1280px;margin:0 auto}
 #histPane{display:none}
 #trackerPane{display:none}
 
+/* ── Back bar ── */
+.back-bar{display:flex;align-items:center;gap:6px;background:#1e3a8a;color:#93c5fd;font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;text-decoration:none;padding:6px 20px;transition:background .15s}
+.back-bar:hover{background:#1d4ed8;color:#fff}
+.back-arrow{font-size:18px;line-height:1;font-weight:400;margin-top:-1px}
+
 /* ═══════════════════════════════════════
    MOBILE RESPONSIVE — completo
    ═══════════════════════════════════════ */
@@ -241,6 +246,7 @@ main{padding:14px 24px 80px;max-width:1280px;margin:0 auto}
      HEADER: sticky mínimo — solo título+botón
      Criterios salen del sticky, se colapsan
      ══════════════════════════════════════════ */
+  .back-bar{padding:5px 12px;font-size:10px}
   header{
     padding:8px 12px;
     /* Sticky solo contiene hdr-top */
@@ -492,6 +498,10 @@ main{padding:14px 24px 80px;max-width:1280px;margin:0 auto}
     <div class="rpt-body" id="rptBody"></div>
   </div>
 </div>
+
+<a href="https://apuesta1x30-droid.github.io/apuestas/" class="back-bar">
+  <span class="back-arrow">‹</span> Volver al inicio
+</a>
 
 <header>
   <div class="hdr-top">
