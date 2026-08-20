@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Euromillones · Análisis Probabilístico v3.0</title>
+<title>Euromillones · Análisis Probabilístico v3.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#0a0e1a;--bg2:#121826;--card:#1a2236;--card2:#232d47;--accent:#00d4ff;--accent2:#7c5cff;--gold:#ffd700;--green:#00e676;--red:#ff4757;--orange:#ff9f43;--text:#e8ecf4;--muted:#8892a6;--border:#2a3452;--grad:linear-gradient(135deg,#00d4ff 0%,#7c5cff 100%);--grad2:linear-gradient(135deg,#ffd700 0%,#ff9f43 100%)}
@@ -15,8 +15,6 @@ header{background:var(--grad);padding:20px 16px;border-radius:0 0 20px 20px;marg
 header h1{font-size:22px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px}
 header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
 .back-link{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.2);padding:6px 12px;border-radius:20px;font-size:12px;color:#fff;margin-bottom:12px;backdrop-filter:blur(10px);text-decoration:none}
-
-/* SYNC STATUS */
 .sync-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;font-size:12px}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
 .sync-dot.loading{background:var(--orange);animation:pulse 1s infinite}
@@ -28,7 +26,6 @@ header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
 .sync-text b{color:var(--text)}
 .sync-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600}
 .sync-btn:disabled{opacity:.5;cursor:not-allowed}
-
 .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
 .stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center}
 .stat-box .val{font-size:18px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -56,6 +53,7 @@ header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
 .btn-secondary{background:var(--card2);color:var(--text);border:1px solid var(--border)}
 .btn-gold{background:var(--grad2);color:#1a1a1a;box-shadow:0 4px 14px rgba(255,215,0,.3)}
 .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-sm{padding:8px 12px;font-size:12px;width:auto;margin-top:8px}
 .score-display{background:var(--bg2);border-radius:14px;padding:16px;margin:12px 0;text-align:center}
 .score-big{font-size:42px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
 .score-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
@@ -100,7 +98,6 @@ header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
 </header>
 <div class="container">
 
-  <!-- BARRA DE SINCRONIZACIÓN -->
   <div class="sync-bar" id="syncBar">
     <div class="sync-dot loading" id="syncDot"></div>
     <div class="sync-text" id="syncText">Conectando con Google Sheets...</div>
@@ -113,8 +110,10 @@ header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
     <div class="stat-box"><div class="val" id="stHot">—</div><div class="lbl">Más Frec.</div></div>
     <div class="stat-box"><div class="val" id="stStar">—</div><div class="lbl">★ Estrella</div></div>
   </div>
+  
   <div class="tabs" id="tabs">
     <div class="tab active" data-tab="sim">🎯 Simulador</div>
+    <div class="tab" data-tab="mibolet">🎫 Mi Boleto</div>
     <div class="tab" data-tab="ensemble">⭐ Ensemble M5</div>
     <div class="tab" data-tab="windows">📅 Ventanas</div>
     <div class="tab" data-tab="streaks">🔥 Rachas</div>
@@ -142,6 +141,35 @@ header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
       <button class="btn btn-gold" onclick="Sim.random()">🎲 Aleatoria</button>
       <button class="btn btn-secondary" onclick="Sim.loadEnsemble()">⭐ Cargar Ensemble M5</button>
       <div id="simResult"></div>
+    </div>
+  </div>
+
+  <!-- PANEL: MI BOLETO (NUEVO) -->
+  <div class="panel" id="panel-mibolet">
+    <div class="card">
+      <h2>🎫 Mi Boleto Actual</h2>
+      <div class="note">Registra la combinación que estás jugando actualmente. Se guardará en este dispositivo hasta que la cambies o la borres.</div>
+      
+      <div id="ticketDisplay" style="display:none; text-align:center; margin:16px 0;">
+        <div class="score-label">TU COMBINACIÓN ACTIVA</div>
+        <div class="combo-display" id="ticketComboDisplay"></div>
+        <div id="ticketScoreDisplay" style="margin-top:12px"></div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn btn-primary" onclick="Ticket.analyze()">🔍 Analizar este boleto</button>
+          <button class="btn btn-secondary" onclick="Ticket.clear()">🗑️ Borrar boleto</button>
+        </div>
+        <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:8px" onclick="Ticket.showEditor()">✏️ Editar combinación</button>
+      </div>
+
+      <div id="ticketEditor">
+        <h3>Números — elige 5 de 50 <span id="ticketNumCount" style="color:var(--accent)">(0/5)</span></h3>
+        <div class="num-grid" id="ticketNumGrid"></div>
+        <h3>Estrellas — elige 2 de 12 <span id="ticketStarCount" style="color:var(--gold)">(0/2)</span></h3>
+        <div class="num-grid star" id="ticketStarGrid"></div>
+        <button class="btn btn-gold" onclick="Ticket.save()" style="margin-top:12px">💾 Guardar como mi boleto actual</button>
+      </div>
+      
+      <div id="ticketAnalysisResult" style="margin-top:16px"></div>
     </div>
   </div>
 
@@ -221,7 +249,7 @@ header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
   <div class="panel" id="panel-heatmap">
     <div class="card">
       <h2>🗺️ Mapa de Calor</h2>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Score ensemble 0-1 para cada número y estrella. Los marcados con ✓ son los elegidos por M5.</p>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Score ensemble 0-1 para cada número y estrella. Los marcados con borde verde son los elegidos por M5.</p>
       <h3>Números 1-50</h3>
       <div class="heatmap" id="heatNums" style="display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin:10px 0"></div>
       <h3 style="margin-top:16px">Estrellas 1-12</h3>
@@ -270,12 +298,10 @@ header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
         <br><br>
         <b>URL fuente:</b> <span style="color:var(--accent);word-break:break-all;font-size:10px">https://docs.google.com/spreadsheets/d/e/2PACX-1vRy91wfK2JteoMi1ZOhGm0D1RKJfDTbEOj6rfnrB6-X7n2Q1nfFwBZBpcivHRdg3pSwxSQgLA3KpW7v/pub?output=xlsx</span>
       </div>
-      
       <div class="btn-row" style="margin-top:12px">
         <button class="btn btn-primary" onclick="Data.forceRefresh()">⟳ Forzar actualización</button>
         <button class="btn btn-secondary" onclick="Data.exportJSON()">⬇ Exportar JSON</button>
       </div>
-      
       <h3 style="margin-top:16px">Importación manual (fallback)</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Si la descarga automática falla, puedes subir el Excel manualmente.</p>
       <div class="drop-zone" id="dropZone">
@@ -285,7 +311,6 @@ header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
         <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
       </div>
       <div class="log" id="importLog"><div class="log-entry info">Sistema listo</div></div>
-      
       <button class="btn btn-secondary" onclick="Data.restore()" style="margin-top:12px">↺ Restaurar y limpiar caché</button>
     </div>
   </div>
@@ -294,58 +319,42 @@ header .sub{font-size:12px;color:rgba(255,255,255,.85);margin-top:4px}
 
 <div class="bottom-nav">
   <div class="nav-btn active" data-tab="sim"><div class="ico">🎯</div>Simulador</div>
+  <div class="nav-btn" data-tab="mibolet"><div class="ico">🎫</div>Boleto</div>
   <div class="nav-btn" data-tab="ensemble"><div class="ico">⭐</div>M5</div>
   <div class="nav-btn" data-tab="heatmap"><div class="ico">🗺️</div>Mapa</div>
   <div class="nav-btn" data-tab="history"><div class="ico">📜</div>Historial</div>
-  <div class="nav-btn" data-tab="import"><div class="ico">📥</div>Datos</div>
 </div>
 
 <script>
 /* ============================================================
-   EUROMILLONES PROBABILÍSTICO v3.0 — CON AUTO-SYNC GOOGLE SHEETS
+   EUROMILLONES PROBABILÍSTICO v3.1 — CON SECCIÓN "MI BOLETO"
    ============================================================ */
 
 const REMOTE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRy91wfK2JteoMi1ZOhGm0D1RKJfDTbEOj6rfnrB6-X7n2Q1nfFwBZBpcivHRdg3pSwxSQgLA3KpW7v/pub?output=xlsx';
 
-// ============ ESTADO GLOBAL ============
 const State = { 
-  draws: [], 
-  drawsPost2016: [], 
-  ensemble: null,
-  currentWindow: 'all',
-  histFilters: { search: '' },
-  histPage: 1,
-  histPerPage: 20,
-  syncStatus: 'loading' // loading | ok | cached | error
+  draws: [], drawsPost2016: [], ensemble: null, currentWindow: 'all',
+  histFilters: { search: '' }, histPage: 1, histPerPage: 20, syncStatus: 'loading'
 };
 
 const U = {
   $(id){return document.getElementById(id)},
   toast(msg, dur=2000){const t=U.$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), dur)},
   log(msg, type='info'){
-    const l=U.$('importLog'); 
-    if(!l) return;
-    const e=document.createElement('div'); 
-    e.className='log-entry '+type; 
-    e.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`; 
-    l.appendChild(e); 
-    l.scrollTop=l.scrollHeight;
+    const l=U.$('importLog'); if(!l) return;
+    const e=document.createElement('div'); e.className='log-entry '+type; 
+    e.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`; l.appendChild(e); l.scrollTop=l.scrollHeight;
   },
   fmtDate(d){return d.toISOString().slice(0,10)},
   shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a},
   norm(v,min,max){return max===min?0.5:(v-min)/(max-min)},
-  parseDate(s){return new Date(s)},
-  daysBetween(a,b){return Math.abs(b-a)/(1000*60*60*24)},
   comb(n,k){if(k<0||k>n)return 0;if(k===0||k===n)return 1;let r=1;for(let i=0;i<k;i++)r=r*(n-i)/(i+1);return r}
 };
 
-// ============ UI DE SINCRONIZACIÓN ============
 const SyncUI = {
   setStatus(status, text){
     State.syncStatus = status;
-    const dot = U.$('syncDot');
-    const txt = U.$('syncText');
-    const btn = U.$('syncBtn');
+    const dot = U.$('syncDot'), txt = U.$('syncText'), btn = U.$('syncBtn');
     dot.className = 'sync-dot ' + status;
     txt.innerHTML = text;
     btn.disabled = (status === 'loading');
@@ -353,286 +362,230 @@ const SyncUI = {
   }
 };
 
-// ============ GESTIÓN DE DATOS ============
 const Data = {
-  STORAGE_KEY: 'euromillones_data_v3.0',
-  META_KEY: 'euromillones_meta_v3.0',
-  
+  STORAGE_KEY: 'euromillones_data_v3.1',
   async init(){
     SyncUI.setStatus('loading', 'Conectando con Google Sheets...');
     U.log('Iniciando sincronización automática...', 'info');
-    
-    // 1. Intentar descarga remota
     try {
       const remoteData = await this.fetchRemote();
       if(remoteData && remoteData.length > 0){
         const lastDate = remoteData[0].date;
         const cached = this.loadCached();
-        
         if(cached && cached.length > 0){
           const cachedLast = cached[0].date;
           if(lastDate > cachedLast){
-            // Hay datos nuevos
             const newCount = remoteData.filter(d => d.date > cachedLast).length;
-            State.draws = remoteData;
-            this.save();
+            State.draws = remoteData; this.save();
             SyncUI.setStatus('ok', `✓ <b>${newCount} sorteos nuevos</b> descargados · Último: <b>${U.fmtDate(lastDate)}</b>`);
             U.log(`✓ Descargados ${newCount} sorteos nuevos`, 'ok');
           } else {
-            // Sin cambios, usar caché
             State.draws = cached;
             SyncUI.setStatus('cached', `✓ Datos actualizados · Último sorteo: <b>${U.fmtDate(lastDate)}</b>`);
-            U.log(`Sin cambios. Usando caché (${cached.length} sorteos)`, 'info');
           }
         } else {
-          // Primera vez
-          State.draws = remoteData;
-          this.save();
+          State.draws = remoteData; this.save();
           SyncUI.setStatus('ok', `✓ <b>${remoteData.length} sorteos</b> descargados · Último: <b>${U.fmtDate(lastDate)}</b>`);
-          U.log(`✓ Primera carga: ${remoteData.length} sorteos`, 'ok');
         }
-        this.process();
-        return;
+        this.process(); return;
       }
-    } catch(err){
-      U.log('Error en descarga remota: ' + err.message, 'err');
-    }
+    } catch(err){ U.log('Error en descarga remota: ' + err.message, 'err'); }
     
-    // 2. Fallback: usar caché
     const cached = this.loadCached();
     if(cached && cached.length > 0){
       State.draws = cached;
-      SyncUI.setStatus('cached', `⚠ Modo offline · Usando caché (${cached.length} sorteos) · Último: <b>${U.fmtDate(cached[0].date)}</b>`);
-      U.log(`Usando caché local (${cached.length} sorteos)`, 'info');
-      this.process();
-      return;
+      SyncUI.setStatus('cached', `⚠ Modo offline · Usando caché (${cached.length} sorteos)`);
+      this.process(); return;
     }
-    
-    // 3. Sin datos en absoluto
     SyncUI.setStatus('error', '❌ Sin datos · Ve a "Datos" para importar manualmente');
-    U.log('No hay datos disponibles. Importa un Excel manualmente.', 'err');
     this.process();
   },
-  
   async fetchRemote(){
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
-    
     try {
-      const response = await fetch(REMOTE_URL, { 
-        signal: controller.signal,
-        cache: 'no-store'
-      });
+      const response = await fetch(REMOTE_URL, { signal: controller.signal, cache: 'no-store' });
       clearTimeout(timeoutId);
-      
       if(!response.ok) throw new Error('HTTP ' + response.status);
-      
       const buffer = await response.arrayBuffer();
       const wb = XLSX.read(buffer, {type:'array', cellDates:true});
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, dateNF:'yyyy-mm-dd'});
-      
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:false, dateNF:'yyyy-mm-dd'});
       return this.parseRows(rows);
-    } catch(err){
-      clearTimeout(timeoutId);
-      throw err;
-    }
+    } catch(err){ clearTimeout(timeoutId); throw err; }
   },
-  
   parseRows(rows){
     const draws = [];
     for(let i=0;i<rows.length;i++){
-      const row = rows[i];
-      if(!row || row.length < 7) continue;
-      
-      // Buscar fecha
+      const row = rows[i]; if(!row || row.length < 7) continue;
       let dateObj = null;
       for(let j=0;j<Math.min(3,row.length);j++){
         const cell = row[j];
         if(typeof cell === 'string'){
           const m = cell.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-          if(m){
-            let y = parseInt(m[3]); if(y<100) y+=2000;
-            dateObj = new Date(y, parseInt(m[2])-1, parseInt(m[1]));
-            break;
-          }
-        } else if(cell instanceof Date && !isNaN(cell.getTime())){
-          dateObj = cell; break;
-        }
+          if(m){ let y = parseInt(m[3]); if(y<100) y+=2000; dateObj = new Date(y, parseInt(m[2])-1, parseInt(m[1])); break; }
+        } else if(cell instanceof Date && !isNaN(cell.getTime())){ dateObj = cell; break; }
       }
       if(!dateObj || isNaN(dateObj.getTime())) continue;
-      
-      // Extraer números
       const rowNums = [];
       for(const cell of row){
         let val = null;
         if(typeof cell === 'number') val = cell;
-        else if(typeof cell === 'string'){
-          const trimmed = cell.trim();
-          if(/^\d{1,2}$/.test(trimmed)) val = parseInt(trimmed, 10);
-        }
+        else if(typeof cell === 'string'){ const trimmed = cell.trim(); if(/^\d{1,2}$/.test(trimmed)) val = parseInt(trimmed, 10); }
         if(val !== null && val >= 1 && val <= 50) rowNums.push(val);
       }
-      
       const uniqueNums = [...new Set(rowNums)];
       if(uniqueNums.length >= 7){
-        draws.push({
-          date: dateObj,
-          numbers: uniqueNums.slice(0, 5).sort((a,b)=>a-b),
-          stars: uniqueNums.slice(5, 7).sort((a,b)=>a-b)
-        });
+        draws.push({ date: dateObj, numbers: uniqueNums.slice(0, 5).sort((a,b)=>a-b), stars: uniqueNums.slice(5, 7).sort((a,b)=>a-b) });
       }
     }
-    
-    // Ordenar por fecha descendente y eliminar duplicados
     draws.sort((a,b)=>b.date-a.date);
     const seen = new Set();
-    return draws.filter(d=>{
-      const k = U.fmtDate(d.date);
-      if(seen.has(k)) return false;
-      seen.add(k); return true;
-    });
+    return draws.filter(d=>{ const k = U.fmtDate(d.date); if(seen.has(k)) return false; seen.add(k); return true; });
   },
-  
   loadCached(){
     try {
       const saved = localStorage.getItem(this.STORAGE_KEY);
       if(!saved) return null;
       const parsed = JSON.parse(saved);
       if(!parsed.draws || parsed.draws.length === 0) return null;
-      return parsed.draws.map(d=>({
-        date: new Date(d.date),
-        numbers: d.numbers,
-        stars: d.stars
-      }));
+      return parsed.draws.map(d=>({ date: new Date(d.date), numbers: d.numbers, stars: d.stars }));
     } catch(e){ return null; }
   },
-  
   process(){
     State.draws.sort((a,b)=>b.date-a.date);
-    const cutoff = new Date('2016-09-27');
-    State.drawsPost2016 = State.draws.filter(d=>d.date>=cutoff);
-    this.save();
-    this.updateHeader();
-    Models.calculate();
-    Ensemble.calculate();
-    UI.refreshAll();
+    State.drawsPost2016 = State.draws.filter(d=>d.date>=new Date('2016-09-27'));
+    this.save(); this.updateHeader(); Models.calculate(); Ensemble.calculate(); UI.refreshAll();
   },
-  
   save(){
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
-        draws: State.draws.map(d=>({date:d.date.toISOString(), numbers:d.numbers, stars:d.stars})),
-        savedAt: new Date().toISOString()
-      }));
-    } catch(e){ console.warn('No se pudo guardar', e); }
+    try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify({ draws: State.draws.map(d=>({date:d.date.toISOString(), numbers:d.numbers, stars:d.stars})), savedAt: new Date().toISOString() })); } 
+    catch(e){ console.warn('No se pudo guardar', e); }
   },
-  
   async forceRefresh(){
     if(State.syncStatus === 'loading') return;
-    SyncUI.setStatus('loading', 'Forzando actualización desde Google Sheets...');
-    U.log('Forzando descarga remota...', 'info');
+    SyncUI.setStatus('loading', 'Forzando actualización...');
     try {
       const remoteData = await this.fetchRemote();
       if(remoteData && remoteData.length > 0){
-        State.draws = remoteData;
-        this.save();
-        this.process();
-        const lastDate = remoteData[0].date;
-        SyncUI.setStatus('ok', `✓ Actualizado · <b>${remoteData.length} sorteos</b> · Último: <b>${U.fmtDate(lastDate)}</b>`);
-        U.log(`✓ Actualización completa: ${remoteData.length} sorteos`, 'ok');
+        State.draws = remoteData; this.save(); this.process();
+        SyncUI.setStatus('ok', `✓ Actualizado · <b>${remoteData.length} sorteos</b>`);
         U.toast('Datos actualizados ✓', 3000);
-      } else {
-        throw new Error('No se encontraron sorteos válidos');
       }
-    } catch(err){
-      SyncUI.setStatus('error', '❌ Error: ' + err.message);
-      U.log('Error: ' + err.message, 'err');
-      U.toast('Error al actualizar', 3000);
-    }
+    } catch(err){ SyncUI.setStatus('error', '❌ Error: ' + err.message); U.toast('Error al actualizar', 3000); }
   },
-  
   exportJSON(){
     if(State.draws.length === 0){ U.toast('No hay datos'); return; }
     const data = JSON.stringify(State.draws.map(d=>({date:U.fmtDate(d.date), numbers:d.numbers, stars:d.stars})), null, 2);
-    const blob = new Blob([data], {type:'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'euromillones_data.json';
-    a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], {type:'application/json'})); a.download = 'euromillones_data.json'; a.click();
     U.toast('JSON exportado ✓');
   },
-  
-  restore(){
-    if(!confirm('¿Borrar todos los datos y la caché?')) return;
-    localStorage.removeItem(this.STORAGE_KEY);
-    localStorage.removeItem(this.META_KEY);
-    location.reload();
-  },
-  
+  restore(){ if(!confirm('¿Borrar todos los datos y la caché?')) return; localStorage.removeItem(this.STORAGE_KEY); location.reload(); },
   updateHeader(){
-    const total = State.draws.length;
-    if(total===0){
-      U.$('headerSub').textContent = 'Sin datos disponibles';
-      return;
-    }
-    const first = State.draws[State.draws.length-1].date;
-    const last = State.draws[0].date;
-    const years = ((last-first)/(1000*60*60*24*365.25)).toFixed(1);
+    const total = State.draws.length; if(total===0) return;
+    const first = State.draws[State.draws.length-1].date, last = State.draws[0].date;
     U.$('headerSub').textContent = `${total.toLocaleString('es')} sorteos · ${U.fmtDate(first)} – ${U.fmtDate(last)}`;
     U.$('stTotal').textContent = total.toLocaleString('es');
-    U.$('stYears').textContent = years;
-    
+    U.$('stYears').textContent = ((last-first)/(1000*60*60*24*365.25)).toFixed(1);
     const numC = Array(51).fill(0), starC = Array(13).fill(0);
     State.draws.forEach(d=>d.numbers.forEach(n=>numC[n]++));
     State.drawsPost2016.forEach(d=>d.stars.forEach(s=>starC[s]++));
     let maxN=0, topN=0, maxS=0, topS=0;
     for(let i=1;i<=50;i++) if(numC[i]>maxN){maxN=numC[i];topN=i}
     for(let i=1;i<=12;i++) if(starC[i]>maxS){maxS=starC[i];topS=i}
-    U.$('stHot').textContent = topN;
-    U.$('stStar').textContent = '★'+topS;
+    U.$('stHot').textContent = topN; U.$('stStar').textContent = '★'+topS;
   }
 };
 
-// ============ IMPORTADOR MANUAL (FALLBACK) ============
-const Importer = {
-  init(){
-    const dz = U.$('dropZone'), fi = U.$('fileInput');
-    if(!dz || !fi) return;
-    dz.addEventListener('click', ()=>fi.click());
-    dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('drag')});
-    dz.addEventListener('dragleave', ()=>dz.classList.remove('drag'));
-    dz.addEventListener('drop', e=>{e.preventDefault(); dz.classList.remove('drag'); if(e.dataTransfer.files.length) this.handleFile(e.dataTransfer.files[0])});
-    fi.addEventListener('change', e=>{if(e.target.files.length) this.handleFile(e.target.files[0])});
+// ============ MI BOLETO (NUEVO MÓDULO) ============
+const Ticket = {
+  nums: [], stars: [],
+  init(){ this.load(); this.renderGrids(); this.updateUI(); },
+  load(){
+    try {
+      const saved = localStorage.getItem('euromillones_current_ticket');
+      if(saved){ const data = JSON.parse(saved); this.nums = data.nums || []; this.stars = data.stars || []; }
+    } catch(e){}
   },
-  handleFile(file){
-    U.log(`Procesando archivo: ${file.name}`, 'info');
-    const reader = new FileReader();
-    reader.onload = e=>{
-      try{
-        const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:false, dateNF:'yyyy-mm-dd'});
-        const parsed = Data.parseRows(rows);
-        if(parsed.length === 0){ U.log('No se encontraron sorteos válidos', 'err'); return; }
-        
-        const existingDates = new Set(State.draws.map(d=>U.fmtDate(d.date)));
-        let added = 0;
-        for(const d of parsed){
-          if(!existingDates.has(U.fmtDate(d.date))){
-            State.draws.push(d);
-            existingDates.add(U.fmtDate(d.date));
-            added++;
-          }
-        }
-        U.log(`✓ Añadidos ${added} sorteos nuevos`, 'ok');
-        U.toast(`${added} sorteos añadidos ✓`, 3000);
-        Data.process();
-        SyncUI.setStatus('ok', `✓ Importación manual · <b>${State.draws.length} sorteos</b>`);
-      }catch(err){
-        U.log('Error: '+err.message, 'err');
+  save(){
+    if(this.nums.length !== 5 || this.stars.length !== 2){ U.toast('Debes elegir 5 números y 2 estrellas'); return; }
+    localStorage.setItem('euromillones_current_ticket', JSON.stringify({ nums: this.nums, stars: this.stars, savedAt: new Date().toISOString() }));
+    U.toast('Boleto guardado correctamente ✓');
+    this.updateUI();
+  },
+  clear(){
+    if(!confirm('¿Borrar tu boleto actual?')) return;
+    localStorage.removeItem('euromillones_current_ticket');
+    this.nums = []; this.stars = [];
+    this.renderGrids(); this.updateUI();
+    U.$('ticketAnalysisResult').innerHTML = '';
+    U.toast('Boleto borrado');
+  },
+  showEditor(){
+    U.$('ticketDisplay').style.display = 'none';
+    U.$('ticketEditor').style.display = 'block';
+    U.$('ticketAnalysisResult').innerHTML = '';
+  },
+  toggleNum(n){
+    if(this.nums.includes(n)) this.nums = this.nums.filter(x => x !== n);
+    else { if(this.nums.length >= 5){ U.toast('Máximo 5 números'); return; } this.nums.push(n); }
+    this.renderGrids();
+  },
+  toggleStar(n){
+    if(this.stars.includes(n)) this.stars = this.stars.filter(x => x !== n);
+    else { if(this.stars.length >= 2){ U.toast('Máximo 2 estrellas'); return; } this.stars.push(n); }
+    this.renderGrids();
+  },
+  renderGrids(){
+    const ng = U.$('ticketNumGrid'); ng.innerHTML = '';
+    for(let i=1;i<=50;i++){ const b=document.createElement('button'); b.className='num-btn'+(this.nums.includes(i)?' sel':''); b.textContent=i; b.onclick=()=>this.toggleNum(i); ng.appendChild(b); }
+    const sg = U.$('ticketStarGrid'); sg.innerHTML = '';
+    for(let i=1;i<=12;i++){ const b=document.createElement('button'); b.className='num-btn star'+(this.stars.includes(i)?' sel':''); b.textContent='★'+i; b.onclick=()=>this.toggleStar(i); sg.appendChild(b); }
+    U.$('ticketNumCount').textContent=`(${this.nums.length}/5)`;
+    U.$('ticketStarCount').textContent=`(${this.stars.length}/2)`;
+  },
+  updateUI(){
+    if(this.nums.length === 5 && this.stars.length === 2){
+      U.$('ticketDisplay').style.display = 'block';
+      U.$('ticketEditor').style.display = 'none';
+      U.$('ticketComboDisplay').innerHTML = this.nums.map(n=>`<div class="combo-num">${n}</div>`).join('') + this.stars.map(s=>`<div class="combo-num combo-star">★${s}</div>`).join('');
+      
+      let ensScore = 0;
+      for(const m in Ensemble.weights){
+        const ns = this.nums.map(n=>Models.scoreNumber(n,m)).reduce((a,b)=>a+b,0)/5;
+        const ss = this.stars.map(s=>Models.scoreStar(s,m)).reduce((a,b)=>a+b,0)/2;
+        ensScore += Ensemble.weights[m] * (ns*0.8 + ss*0.2);
       }
-    };
-    reader.readAsArrayBuffer(file);
+      U.$('ticketScoreDisplay').innerHTML = `<div class="score-big" style="font-size:28px">${(ensScore*100).toFixed(1)}</div><div class="score-label">Puntuación Ensemble</div>`;
+    } else {
+      U.$('ticketDisplay').style.display = 'none';
+      U.$('ticketEditor').style.display = 'block';
+    }
+  },
+  analyze(){
+    if(this.nums.length !== 5 || this.stars.length !== 2) return;
+    const models = ['freq','absent','streak','window','balanced'];
+    const names = {freq:'Frecuencia histórica',absent:'Regresión (ausentes)',streak:'Rachas recientes',window:'Ventana temporal',balanced:'Equilibrio estructural'};
+    const results = models.map(m=>{
+      const ns = this.nums.map(n=>Models.scoreNumber(n,m)).reduce((a,b)=>a+b,0)/5;
+      const ss = this.stars.map(s=>Models.scoreStar(s,m)).reduce((a,b)=>a+b,0)/2;
+      return {model:m, name:names[m], score: ns*0.8 + ss*0.2};
+    }).sort((a,b)=>b.score-a.score);
+    
+    let ensScore = 0;
+    for(const r of results) ensScore += Ensemble.weights[r.model]*r.score;
+    
+    let html = `<div class="score-display"><div class="score-label">Análisis de tu boleto</div><div class="score-big">${(ensScore*100).toFixed(1)}</div><div class="score-bar"><div class="score-bar-fill" style="width:${ensScore*100}%"></div></div></div><h3>Desglose por modelo</h3>`;
+    results.forEach((r,i)=>{ html+=`<div class="result-row"><div class="rank">#${i+1}</div><div class="name">${r.name}</div><div class="score">${(r.score*100).toFixed(1)}</div><div class="pos">${r.model.toUpperCase()}</div></div>`; });
+    
+    const pares = this.nums.filter(n=>n%2===0).length;
+    const altos = this.nums.filter(n=>n>25).length;
+    const suma = this.nums.reduce((a,b)=>a+b,0);
+    html += '<h3>↑ Sugerencias</h3>';
+    if(pares===0||pares===5) html+=`<div class="suggestion warn">⚠️ Distribución par/impar desequilibrada (${pares}/${5-pares})</div>`;
+    if(altos===0||altos===5) html+=`<div class="suggestion warn">⚠️ Todos los números son ${altos===0?'bajos (≤25)':'altos (>25)'}</div>`;
+    if(suma<80||suma>175) html+=`<div class="suggestion warn">⚠️ Suma total = ${suma}. Rango óptimo histórico: 80-175</div>`;
+    if(ensScore<0.4) html+=`<div class="suggestion bad">❌ Score bajo. Considera revisar la combinación.</div>`;
+    else html+=`<div class="suggestion">✓ Combinación bien equilibrada según los modelos</div>`;
+    U.$('ticketAnalysisResult').innerHTML = html;
   }
 };
 
@@ -675,10 +628,10 @@ const Models = {
     const now = State.draws.length>0 ? State.draws[0].date : new Date();
     const windows = {
       'all': State.draws,
-      '3y': State.drawsPost2016.filter(d=>U.daysBetween(d.date,now)<=365*3),
-      '1y': State.drawsPost2016.filter(d=>U.daysBetween(d.date,now)<=365),
-      '6m': State.drawsPost2016.filter(d=>U.daysBetween(d.date,now)<=182),
-      '3m': State.drawsPost2016.filter(d=>U.daysBetween(d.date,now)<=91)
+      '3y': State.drawsPost2016.filter(d=>Math.abs(d.date-now)/(1000*60*60*24)<=365*3),
+      '1y': State.drawsPost2016.filter(d=>Math.abs(d.date-now)/(1000*60*60*24)<=365),
+      '6m': State.drawsPost2016.filter(d=>Math.abs(d.date-now)/(1000*60*60*24)<=182),
+      '3m': State.drawsPost2016.filter(d=>Math.abs(d.date-now)/(1000*60*60*24)<=91)
     };
     const result = {};
     for(const k in windows){
@@ -708,7 +661,6 @@ const Models = {
   }
 };
 
-// ============ ENSEMBLE M5 ============
 const Ensemble = {
   weights: {freq:0.30, absent:0.20, streak:0.20, window:0.20, balanced:0.10},
   calculate(){
@@ -717,13 +669,11 @@ const Ensemble = {
       for(const m in this.weights) score += this.weights[m]*Models.scoreNumber(n,m);
       return {num:n, score};
     }).sort((a,b)=>b.score-a.score);
-    
     const starScores = Array.from({length:12},(_,i)=>{
       const n=i+1; let score=0;
       for(const m in this.weights) score += this.weights[m]*Models.scoreStar(n,m);
       return {num:n, score};
     }).sort((a,b)=>b.score-a.score);
-    
     State.ensemble = {
       numbers: numScores.slice(0,5).map(x=>x.num).sort((a,b)=>a-b),
       stars: starScores.slice(0,2).map(x=>x.num).sort((a,b)=>a-b),
@@ -735,7 +685,6 @@ const Ensemble = {
   sendToSim(){if(!State.ensemble)return; Sim.selectedNums=[...State.ensemble.numbers]; Sim.selectedStars=[...State.ensemble.stars]; UI.switchTab('sim'); Sim.renderGrid(); Sim.analyze()}
 };
 
-// ============ SIMULADOR ============
 const Sim = {
   selectedNums: [], selectedStars: [],
   init(){this.renderGrid()},
@@ -761,13 +710,10 @@ const Sim = {
       const ss = this.selectedStars.map(s=>Models.scoreStar(s,m)).reduce((a,b)=>a+b,0)/2;
       return {model:m, name:names[m], score: ns*0.8 + ss*0.2};
     }).sort((a,b)=>b.score-a.score);
-    
     let ensScore = 0;
     for(const r of results) ensScore += Ensemble.weights[r.model]*r.score;
-    
     let html = `<div class="score-display"><div class="score-label">Tu combinación</div><div class="combo-display">${this.selectedNums.map(n=>`<div class="combo-num">${n}</div>`).join('')}${this.selectedStars.map(s=>`<div class="combo-num combo-star">★${s}</div>`).join('')}</div><div style="margin-top:14px"><div class="score-label">Puntuación Ensemble</div><div class="score-big">${(ensScore*100).toFixed(1)}</div><div class="score-bar"><div class="score-bar-fill" style="width:${ensScore*100}%"></div></div></div></div><h3>Desglose por modelo</h3>`;
     results.forEach((r,i)=>{html+=`<div class="result-row"><div class="rank">#${i+1}</div><div class="name">${r.name}</div><div class="score">${(r.score*100).toFixed(1)}</div><div class="pos">${r.model.toUpperCase()}</div></div>`});
-    
     const pares = this.selectedNums.filter(n=>n%2===0).length;
     const altos = this.selectedNums.filter(n=>n>25).length;
     const suma = this.selectedNums.reduce((a,b)=>a+b,0);
@@ -777,12 +723,10 @@ const Sim = {
     if(suma<80||suma>175) html+=`<div class="suggestion warn">⚠️ Suma total = ${suma}. Rango óptimo histórico: 80-175</div>`;
     if(ensScore<0.4) html+=`<div class="suggestion bad">❌ Score bajo. Prueba con la recomendación M5.</div>`;
     else html+=`<div class="suggestion">✓ Combinación bien equilibrada</div>`;
-    
     U.$('simResult').innerHTML = html;
   }
 };
 
-// ============ UI ============
 const UI = {
   switchTab(tab){
     document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
@@ -791,44 +735,26 @@ const UI = {
     window.scrollTo({top:0, behavior:'smooth'});
   },
   initTabs(){
-    document.querySelectorAll('.tab, .nav-btn').forEach(el=>{
-      if(el.dataset.tab) el.onclick=()=>this.switchTab(el.dataset.tab);
-    });
-    // Ventanas
+    document.querySelectorAll('.tab, .nav-btn').forEach(el=>{ if(el.dataset.tab) el.onclick=()=>this.switchTab(el.dataset.tab); });
     document.querySelectorAll('#windowTabs .tab').forEach(t=>{
       t.onclick = ()=>{
         document.querySelectorAll('#windowTabs .tab').forEach(x=>x.classList.remove('active'));
-        t.classList.add('active');
-        State.currentWindow = t.dataset.w;
-        Models.calculate();
-        Ensemble.calculate();
-        this.renderWindows();
-        this.renderHeatmap();
+        t.classList.add('active'); State.currentWindow = t.dataset.w;
+        Models.calculate(); Ensemble.calculate(); this.renderWindows(); this.renderHeatmap();
       };
     });
-    // Validación
     document.querySelectorAll('#valTabs .tab').forEach(t=>{
       t.onclick = ()=>{
         document.querySelectorAll('#valTabs .tab').forEach(x=>x.classList.remove('active'));
-        t.classList.add('active');
-        Validation.selectedN = parseInt(t.dataset.n);
+        t.classList.add('active'); Validation.selectedN = parseInt(t.dataset.n);
       };
     });
   },
-  refreshAll(){
-    this.renderEnsemble();
-    this.renderWindows();
-    this.renderStreaks();
-    this.renderHeatmap();
-    this.renderFreq();
-    this.renderAbsent();
-    History.render();
-  },
+  refreshAll(){ this.renderEnsemble(); this.renderWindows(); this.renderStreaks(); this.renderHeatmap(); this.renderFreq(); this.renderAbsent(); History.render(); },
   renderEnsemble(){
     if(!State.ensemble) return;
     const e = State.ensemble;
-    U.$('ensScore').textContent = (e.score*100).toFixed(1);
-    U.$('ensBar').style.width = (e.score*100)+'%';
+    U.$('ensScore').textContent = (e.score*100).toFixed(1); U.$('ensBar').style.width = (e.score*100)+'%';
     U.$('ensCombo').innerHTML = e.numbers.map(n=>`<div class="combo-num">${n}</div>`).join('') + e.stars.map(s=>`<div class="combo-num combo-star">★${s}</div>`).join('');
     const models = ['freq','absent','streak','window','balanced'];
     const names = {freq:'Frecuencia',absent:'Ausentes',streak:'Rachas',window:'Ventana',balanced:'Equilibrio'};
@@ -838,39 +764,22 @@ const UI = {
       html += `<div class="result-row"><div class="rank">${(Ensemble.weights[m]*100).toFixed(0)}%</div><div class="name">${names[m]}</div><div class="score">${(numAvg*100).toFixed(0)}</div><div class="pos">${m.toUpperCase()}</div></div>`;
     }
     U.$('ensBreakdown').innerHTML = html;
-    const pares = e.numbers.filter(n=>n%2===0).length;
-    const altos = e.numbers.filter(n=>n>25).length;
-    const suma = e.numbers.reduce((a,b)=>a+b,0);
-    U.$('ensSuggestions').innerHTML = `
-      <div class="suggestion">✓ Score ensemble: <b>${(e.score*100).toFixed(1)}/100</b></div>
-      <div class="suggestion">ℹ️ Par/Impar: ${pares}/${5-pares} · Altos/Bajos: ${altos}/${5-altos} · Suma: ${suma}</div>
-    `;
+    const pares = e.numbers.filter(n=>n%2===0).length, altos = e.numbers.filter(n=>n>25).length, suma = e.numbers.reduce((a,b)=>a+b,0);
+    U.$('ensSuggestions').innerHTML = `<div class="suggestion">✓ Score ensemble: <b>${(e.score*100).toFixed(1)}/100</b></div><div class="suggestion">ℹ️ Par/Impar: ${pares}/${5-pares} · Altos/Bajos: ${altos}/${5-altos} · Suma: ${suma}</div>`;
   },
   renderWindows(){
     const w = Models.windows[State.currentWindow];
-    if(!w || w.count===0){
-      U.$('winTopNums').innerHTML = '<div class="note">Sin datos en esta ventana</div>';
-      U.$('winTopStars').innerHTML = '';
-      U.$('winAbsent').innerHTML = '';
-      return;
-    }
+    if(!w || w.count===0){ U.$('winTopNums').innerHTML = '<div class="note">Sin datos</div>'; U.$('winTopStars').innerHTML = ''; U.$('winAbsent').innerHTML = ''; return; }
     let html = '';
-    w.nums.slice(0,5).forEach((n,i)=>{
-      html += `<div class="result-row"><div class="rank">#${i+1}</div><div class="name">Número ${n.num}</div><div class="score">${n.count}×</div><div class="pos">${(n.freq*100).toFixed(1)}%</div></div>`;
-    });
+    w.nums.slice(0,5).forEach((n,i)=>{ html += `<div class="result-row"><div class="rank">#${i+1}</div><div class="name">Número ${n.num}</div><div class="score">${n.count}×</div><div class="pos">${(n.freq*100).toFixed(1)}%</div></div>`; });
     U.$('winTopNums').innerHTML = html;
     html = '';
-    w.stars.slice(0,2).forEach((s,i)=>{
-      html += `<div class="result-row"><div class="rank">#${i+1}</div><div class="name">★${s.num}</div><div class="score">${s.count}×</div><div class="pos">${(s.freq*100).toFixed(1)}%</div></div>`;
-    });
+    w.stars.slice(0,2).forEach((s,i)=>{ html += `<div class="result-row"><div class="rank">#${i+1}</div><div class="name">★${s.num}</div><div class="score">${s.count}×</div><div class="pos">${(s.freq*100).toFixed(1)}%</div></div>`; });
     U.$('winTopStars').innerHTML = html;
     const absent = Array.from({length:50},(_,i)=>{
-      const num = i+1;
-      const windowDraws = State.draws.slice(0, w.count);
+      const num = i+1, windowDraws = State.draws.slice(0, w.count);
       let lastInWindow = -1;
-      for(let j=0;j<windowDraws.length;j++){
-        if(windowDraws[j].numbers.includes(num)){lastInWindow=j;break}
-      }
+      for(let j=0;j<windowDraws.length;j++){ if(windowDraws[j].numbers.includes(num)){lastInWindow=j;break} }
       return {num, absent: lastInWindow===-1 ? w.count : lastInWindow};
     }).sort((a,b)=>b.absent-a.absent);
     html = '';
@@ -882,9 +791,7 @@ const UI = {
   },
   renderStreaks(){
     const s = Models.streaks;
-    const renderList = (arr, limit=10)=>{
-      return arr.slice(0,limit).map((x,i)=>`<div class="result-row"><div class="rank">#${i+1}</div><div class="name">${x.num}</div><div class="score">${x.count}</div><div class="pos">/ ${s.window}</div></div>`).join('');
-    };
+    const renderList = (arr, limit=10)=> arr.slice(0,limit).map((x,i)=>`<div class="result-row"><div class="rank">#${i+1}</div><div class="name">${x.num}</div><div class="score">${x.count}</div><div class="pos">/ ${s.window}</div></div>`).join('');
     U.$('streakHotNums').innerHTML = renderList(s.hotNums.filter(x=>x.count>0));
     U.$('streakColdNums').innerHTML = renderList(s.coldNums.filter(x=>x.count===0).slice(0,10).map(x=>({num:x.num,count:0})));
     U.$('streakHotStars').innerHTML = renderList(s.hotStars.filter(x=>x.count>0), 5);
@@ -892,66 +799,43 @@ const UI = {
   renderHeatmap(){
     if(!State.ensemble) return;
     const e = State.ensemble;
-    const numHtml = [];
-    const maxScore = Math.max(...e.numScores.map(x=>x.score));
-    const minScore = Math.min(...e.numScores.map(x=>x.score));
+    let numHtml = '', maxScore = Math.max(...e.numScores.map(x=>x.score)), minScore = Math.min(...e.numScores.map(x=>x.score));
     for(let i=1;i<=50;i++){
-      const s = e.numScores.find(x=>x.num===i);
-      const norm = U.norm(s.score, minScore, maxScore);
-      const picked = e.numbers.includes(i);
-      const color = this.heatColor(norm);
-      numHtml.push(`<div style="aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;position:relative;background:${color};${picked?'box-shadow:0 0 0 2px var(--green)':''}" title="Nº ${i}: ${(s.score*100).toFixed(1)}">${i}</div>`);
+      const s = e.numScores.find(x=>x.num===i), norm = U.norm(s.score, minScore, maxScore), picked = e.numbers.includes(i);
+      const color = norm<0.5 ? `rgb(${Math.round(26+(0-26)*norm*2)},${Math.round(58+(212-58)*norm*2)},${Math.round(92+(255-92)*norm*2)})` : `rgb(${Math.round(0+(255-0)*(norm-0.5)*2)},${Math.round(212+(215-212)*(norm-0.5)*2)},${Math.round(255+(0-255)*(norm-0.5)*2)})`;
+      numHtml += `<div style="aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;background:${color};${picked?'box-shadow:0 0 0 2px var(--green)':''}" title="Nº ${i}: ${(s.score*100).toFixed(1)}">${i}</div>`;
     }
-    U.$('heatNums').innerHTML = numHtml.join('');
-    const starHtml = [];
-    const sMax = Math.max(...e.starScores.map(x=>x.score));
-    const sMin = Math.min(...e.starScores.map(x=>x.score));
+    U.$('heatNums').innerHTML = numHtml;
+    let starHtml = '', sMax = Math.max(...e.starScores.map(x=>x.score)), sMin = Math.min(...e.starScores.map(x=>x.score));
     for(let i=1;i<=12;i++){
-      const s = e.starScores.find(x=>x.num===i);
-      const norm = U.norm(s.score, sMin, sMax);
-      const picked = e.stars.includes(i);
-      const color = this.heatColor(norm);
-      starHtml.push(`<div style="aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;background:${color};${picked?'box-shadow:0 0 0 2px var(--green)':''}" title="★${i}: ${(s.score*100).toFixed(1)}">★${i}</div>`);
+      const s = e.starScores.find(x=>x.num===i), norm = U.norm(s.score, sMin, sMax), picked = e.stars.includes(i);
+      const color = norm<0.5 ? `rgb(${Math.round(26+(0-26)*norm*2)},${Math.round(58+(212-58)*norm*2)},${Math.round(92+(255-92)*norm*2)})` : `rgb(${Math.round(0+(255-0)*(norm-0.5)*2)},${Math.round(212+(215-212)*(norm-0.5)*2)},${Math.round(255+(0-255)*(norm-0.5)*2)})`;
+      starHtml += `<div style="aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;background:${color};${picked?'box-shadow:0 0 0 2px var(--green)':''}" title="★${i}: ${(s.score*100).toFixed(1)}">★${i}</div>`;
     }
-    U.$('heatStars').innerHTML = starHtml.join('');
-  },
-  heatColor(t){
-    if(t<0.5){const p=t*2; return `rgb(${Math.round(26+(0-26)*p)},${Math.round(58+(212-58)*p)},${Math.round(92+(255-92)*p)})`}
-    else {const p=(t-0.5)*2; return `rgb(${Math.round(0+(255-0)*p)},${Math.round(212+(215-212)*p)},${Math.round(255+(0-255)*p)})`}
+    U.$('heatStars').innerHTML = starHtml;
   },
   renderFreq(){
-    const top = [...Models.freqNumbers].sort((a,b)=>b.count-a.count).slice(0,20);
-    const maxCount = top[0].count;
+    const top = [...Models.freqNumbers].sort((a,b)=>b.count-a.count).slice(0,20), maxCount = top[0].count;
     let html = '';
-    top.forEach((n,i)=>{
-      const pct = (n.count/maxCount*100).toFixed(0);
-      html += `<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px"><span><b>#${i+1}</b> · Número ${n.num}</span><span style="color:var(--accent)">${n.count}× · ${(n.freq*100).toFixed(2)}%</span></div><div style="height:6px;background:var(--card2);border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--grad);border-radius:3px"></div></div></div>`;
-    });
+    top.forEach((n,i)=>{ html += `<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px"><span><b>#${i+1}</b> · Número ${n.num}</span><span style="color:var(--accent)">${n.count}× · ${(n.freq*100).toFixed(2)}%</span></div><div style="height:6px;background:var(--card2);border-radius:3px;overflow:hidden"><div style="height:100%;width:${(n.count/maxCount*100).toFixed(0)}%;background:var(--grad);border-radius:3px"></div></div></div>`; });
     U.$('freqNums').innerHTML = html;
-    const stars = [...Models.freqStars].sort((a,b)=>b.count-a.count);
     html = '';
-    stars.forEach((s,i)=>{
-      html += `<div class="result-row"><div class="rank">#${i+1}</div><div class="name">★${s.num}</div><div class="score">${s.count}×</div><div class="pos">${(s.freq*100).toFixed(2)}%</div></div>`;
-    });
+    [...Models.freqStars].sort((a,b)=>b.count-a.count).forEach((s,i)=>{ html += `<div class="result-row"><div class="rank">#${i+1}</div><div class="name">★${s.num}</div><div class="score">${s.count}×</div><div class="pos">${(s.freq*100).toFixed(2)}%</div></div>`; });
     U.$('freqStars').innerHTML = html;
   },
   renderAbsent(){
-    const top = Models.absentNumbers.slice(0,20);
     let html = '';
-    top.forEach((a,i)=>{
+    Models.absentNumbers.slice(0,20).forEach((a,i)=>{
       const color = a.absent>20 ? 'var(--red)' : a.absent>10 ? 'var(--orange)' : 'var(--text)';
       html += `<div class="result-row"><div class="rank">#${i+1}</div><div class="name">Número ${a.num}</div><div class="score" style="color:${color}">${a.absent}</div><div class="pos">sorteos</div></div>`;
     });
     U.$('absentNums').innerHTML = html;
     html = '';
-    Models.absentStars.slice(0,12).forEach((a,i)=>{
-      html += `<div class="result-row"><div class="rank">#${i+1}</div><div class="name">★${a.num}</div><div class="score">${a.absent}</div><div class="pos">sorteos</div></div>`;
-    });
+    Models.absentStars.slice(0,12).forEach((a,i)=>{ html += `<div class="result-row"><div class="rank">#${i+1}</div><div class="name">★${a.num}</div><div class="score">${a.absent}</div><div class="pos">sorteos</div></div>`; });
     U.$('absentStars').innerHTML = html;
   }
 };
 
-// ============ VALIDACIÓN ============
 const Validation = {
   selectedN: 20,
   async run(){
@@ -960,18 +844,15 @@ const Validation = {
     await new Promise(r=>setTimeout(r,50));
     const n = Math.min(this.selectedN, State.draws.length-20);
     if(n<5){container.innerHTML = '<div class="warn">No hay suficientes sorteos</div>'; return}
-    const testDraws = State.draws.slice(0, n);
-    const results = [];
+    const testDraws = State.draws.slice(0, n), results = [];
     for(let i=0;i<testDraws.length;i++){
-      const target = testDraws[i];
-      const pastDraws = State.draws.slice(i+1);
+      const target = testDraws[i], pastDraws = State.draws.slice(i+1);
       if(pastDraws.length<20) continue;
       const numC = Array(51).fill(0), starC = Array(13).fill(0);
       pastDraws.forEach(d=>{d.numbers.forEach(x=>numC[x]++); d.stars.forEach(x=>starC[x]++)});
       const numAbsent = Array(51).fill(pastDraws.length), starAbsent = Array(13).fill(pastDraws.length);
       pastDraws.forEach((d,idx)=>{d.numbers.forEach(x=>{if(numAbsent[x]===pastDraws.length)numAbsent[x]=idx}); d.stars.forEach(x=>{if(starAbsent[x]===pastDraws.length)starAbsent[x]=idx})});
-      const recent = pastDraws.slice(0,10);
-      const numStreak = Array(51).fill(0), starStreak = Array(13).fill(0);
+      const recent = pastDraws.slice(0,10), numStreak = Array(51).fill(0), starStreak = Array(13).fill(0);
       recent.forEach(d=>{d.numbers.forEach(x=>numStreak[x]++); d.stars.forEach(x=>starStreak[x]++)});
       const numScores = [];
       for(let num=1;num<=50;num++){
@@ -987,24 +868,18 @@ const Validation = {
       }
       starScores.sort((a,b)=>b.score-a.score);
       const predStars = starScores.slice(0,2).map(x=>x.num);
-      const hitsNum = target.numbers.filter(n=>predNums.includes(n)).length;
-      const hitsStar = target.stars.filter(s=>predStars.includes(s)).length;
-      results.push({date:target.date, hitsNum, hitsStar, predNums, predStars, realNums:target.numbers, realStars:target.stars});
+      results.push({date:target.date, hitsNum: target.numbers.filter(n=>predNums.includes(n)).length, hitsStar: target.stars.filter(s=>predStars.includes(s)).length, predNums, predStars, realNums:target.numbers, realStars:target.stars});
       if(i%10===0) await new Promise(r=>setTimeout(r,0));
     }
     this.renderResults(results);
   },
   renderResults(results){
     if(results.length===0){U.$('valResult').innerHTML = '<div class="warn">Sin resultados</div>'; return}
-    const totalNums = results.reduce((s,r)=>s+r.hitsNum,0);
-    const totalStars = results.reduce((s,r)=>s+r.hitsStar,0);
-    const avgNums = (totalNums/results.length).toFixed(2);
-    const avgStars = (totalStars/results.length).toFixed(2);
-    const dist = [0,0,0,0,0,0];
-    results.forEach(r=>dist[r.hitsNum]++);
+    const totalNums = results.reduce((s,r)=>s+r.hitsNum,0), totalStars = results.reduce((s,r)=>s+r.hitsStar,0);
+    const avgNums = (totalNums/results.length).toFixed(2), avgStars = (totalStars/results.length).toFixed(2);
+    const dist = [0,0,0,0,0,0]; results.forEach(r=>dist[r.hitsNum]++);
     const pRandom = [U.comb(5,0)*U.comb(45,5)/U.comb(50,5),U.comb(5,1)*U.comb(45,4)/U.comb(50,5),U.comb(5,2)*U.comb(45,3)/U.comb(50,5),U.comb(5,3)*U.comb(45,2)/U.comb(50,5),U.comb(5,4)*U.comb(45,1)/U.comb(50,5),U.comb(5,5)*U.comb(45,0)/U.comb(50,5)];
-    const randomExpected = pRandom.reduce((s,p,i)=>s+p*i,0);
-    const mejora = ((avgNums-randomExpected)/randomExpected*100).toFixed(1);
+    const randomExpected = pRandom.reduce((s,p,i)=>s+p*i,0), mejora = ((avgNums-randomExpected)/randomExpected*100).toFixed(1);
     let html = `<div class="score-display"><div class="score-label">Resultados (${results.length} sorteos)</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px"><div><div style="font-size:24px;font-weight:900;color:var(--accent)">${avgNums}</div><div style="font-size:10px;color:var(--muted)">Media aciertos nº</div></div><div><div style="font-size:24px;font-weight:900;color:var(--gold)">${avgStars}</div><div style="font-size:10px;color:var(--muted)">Media aciertos ★</div></div></div></div>`;
     html += `<div class="suggestion ${mejora>0?'':'bad'}">${mejora>0?'✓':'⚠️'} Media del modelo: <b>${avgNums}</b> · Azar esperado: <b>${randomExpected.toFixed(2)}</b> · ${mejora>0?`Mejora: <b>+${mejora}%</b>`:`Diferencia: <b>${mejora}%</b>`}</div>`;
     html += '<h3 style="margin-top:12px">Detalle últimos 10 sorteos</h3>';
@@ -1017,7 +892,6 @@ const Validation = {
   }
 };
 
-// ============ HISTORIAL ============
 const History = {
   render(){
     let draws = [...State.draws];
@@ -1025,11 +899,9 @@ const History = {
       const terms = State.histFilters.search.toLowerCase().replace(/★/g,'').split(/[,\s]+/).filter(x=>x);
       draws = draws.filter(d=>terms.every(t=>{const n=parseInt(t); return !isNaN(n) && (d.numbers.includes(n) || d.stars.includes(n))}));
     }
-    const total = draws.length;
-    const pages = Math.ceil(total/State.histPerPage);
+    const total = draws.length, pages = Math.ceil(total/State.histPerPage);
     State.histPage = Math.max(1, Math.min(State.histPage, pages||1));
-    const start = (State.histPage-1)*State.histPerPage;
-    const pageDraws = draws.slice(start, start+State.histPerPage);
+    const start = (State.histPage-1)*State.histPerPage, pageDraws = draws.slice(start, start+State.histPerPage);
     let html = '';
     if(pageDraws.length===0) html = '<div class="note">Sin resultados</div>';
     else pageDraws.forEach(d=>{
@@ -1042,19 +914,46 @@ const History = {
   nextPage(){State.histPage++;this.render()}
 };
 
-// ============ INICIALIZACIÓN ============
+const Importer = {
+  init(){
+    const dz = U.$('dropZone'), fi = U.$('fileInput');
+    if(!dz || !fi) return;
+    dz.addEventListener('click', ()=>fi.click());
+    dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('drag')});
+    dz.addEventListener('dragleave', ()=>dz.classList.remove('drag'));
+    dz.addEventListener('drop', e=>{e.preventDefault(); dz.classList.remove('drag'); if(e.dataTransfer.files.length) this.handleFile(e.dataTransfer.files[0])});
+    fi.addEventListener('change', e=>{if(e.target.files.length) this.handleFile(e.target.files[0])});
+  },
+  handleFile(file){
+    U.log(`Procesando archivo: ${file.name}`, 'info');
+    const reader = new FileReader();
+    reader.onload = e=>{
+      try{
+        const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:false, dateNF:'yyyy-mm-dd'});
+        const parsed = Data.parseRows(rows);
+        if(parsed.length === 0){ U.log('No se encontraron sorteos válidos', 'err'); return; }
+        const existingDates = new Set(State.draws.map(d=>U.fmtDate(d.date)));
+        let added = 0;
+        for(const d of parsed){
+          if(!existingDates.has(U.fmtDate(d.date))){ State.draws.push(d); existingDates.add(U.fmtDate(d.date)); added++; }
+        }
+        U.log(`✓ Añadidos ${added} sorteos nuevos`, 'ok');
+        U.toast(`${added} sorteos añadidos ✓`, 3000);
+        Data.process();
+        SyncUI.setStatus('ok', `✓ Importación manual · <b>${State.draws.length} sorteos</b>`);
+      }catch(err){ U.log('Error: '+err.message, 'err'); }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+};
+
 document.addEventListener('DOMContentLoaded', async ()=>{
   UI.initTabs();
   Sim.init();
+  Ticket.init(); // Inicializar nuevo módulo
   Importer.init();
-  
-  U.$('histSearch').addEventListener('input', e=>{
-    State.histFilters.search = e.target.value;
-    State.histPage = 1;
-    History.render();
-  });
-  
-  // Iniciar sincronización automática
+  U.$('histSearch').addEventListener('input', e=>{ State.histFilters.search = e.target.value; State.histPage = 1; History.render(); });
   await Data.init();
 });
 </script>
